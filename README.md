@@ -10,7 +10,7 @@ This app demonstrates MetaKeep SDK integration in React Native for Solana transa
 
 ## Install
 ```bash
-cd SVMTransactionBroadcasting
+cd Solana-App
 npm install
 ```
 
