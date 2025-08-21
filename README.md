@@ -9,7 +9,8 @@ This app demonstrates MetaKeep SDK integration in React Native for Solana transa
 
 ## Install
 ```bash
-cd Solana-App
+git clone https://github.com/meet-metakeep/React-Native-App.git
+cd React-Native-App
 npm install
 ```
 
