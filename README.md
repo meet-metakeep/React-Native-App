@@ -3,10 +3,9 @@
 This app demonstrates MetaKeep SDK integration in React Native for Solana transactions on Android. It initializes MetaKeep, retrieves the SVM wallet, builds a Solana v0 transaction using @solana/web3.js, signs via MetaKeep, and broadcasts to Devnet.
 
 ## Prerequisites
-- Node 18+
-- Java 17
-- Android SDK and an Android 14 device or emulator
-- Hermes enabled (default in RN 0.81)
+- Node 22+
+- Java 21+
+- Android SDK 26+ and an Android v14 device or emulator
 
 ## Install
 ```bash
