@@ -1,97 +1,75 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# SVM Transaction Broadcasting (Android)
 
-# Getting Started
+This app demonstrates MetaKeep SDK integration in React Native for Solana transactions on Android. It initializes MetaKeep, retrieves the SVM wallet, builds a Solana v0 transaction using @solana/web3.js, signs via MetaKeep, and broadcasts to Devnet.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Prerequisites
+- Node 18+
+- Java 17
+- Android SDK and an Android 14 device or emulator
+- Hermes enabled (default in RN 0.81)
 
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+## Install
+```bash
+cd SVMTransactionBroadcasting
+npm install
 ```
 
-## Step 2: Build and run your app
+## Configure MetaKeep
+- App ID is set in `App.tsx` as:
+```
+const METAKEEP_APP_ID = '12e48311-ebfb-4776-9b57-39e47533757a';
+```
+- Android deep link callback is configured in `android/app/build.gradle` via `manifestPlaceholders` and in `AndroidManifest.xml`.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+## Solana Web3
+- Uses `@solana/web3.js@1.98.4` with React Native friendly polyfills defined in `index.js` (`react-native-get-random-values`, URL polyfill, and Buffer).
+- RPC: `https://api.devnet.solana.com`.
 
-### Android
+## How it works
+- Initialize MetaKeep once on app start
+- Get wallet address: `sdk.getWallet()`
+- Build versioned transaction with recent blockhash
+- Serialize the message and request signature from MetaKeep
+- Attach signature and broadcast using `sendRawTransaction`
 
-```sh
-# Using npm
-npm run android
+Key flow in `App.tsx`:
+```ts
+const sdk = new MetaKeep(METAKEEP_APP_ID);
+const { wallet } = await sdk.getWallet();
 
-# OR using Yarn
-yarn android
+const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
+const feePayer = new PublicKey(wallet.solAddress);
+const recipient = new PublicKey('BCf7PuGsv2yQFRJ9GATZafg4L4LrV6vkfYwmS3jVREvM');
+const { blockhash } = await connection.getLatestBlockhash();
+
+const messageV0 = new TransactionMessage({
+  payerKey: feePayer,
+  recentBlockhash: blockhash,
+  instructions: [
+    ComputeBudgetProgram.setComputeUnitLimit({ units: 200_000 }),
+    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1_000 }),
+    SystemProgram.transfer({ fromPubkey: feePayer, toPubkey: recipient, lamports: 1_000_000 }), // 0.001 SOL
+  ],
+}).compileToV0Message();
+
+const tx = new VersionedTransaction(messageV0);
+const serializedTransactionMessage = '0x' + Buffer.from(tx.message.serialize()).toString('hex');
+
+const { signature } = await sdk.signTransaction({ serializedTransactionMessage }, 'transfer 1 SOL');
+tx.addSignature(feePayer, Buffer.from(signature.replace(/^0x/, ''), 'hex'));
+
+const sig = await connection.sendRawTransaction(Buffer.from(tx.serialize()), { skipPreflight: true });
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+## Run (Android only)
+Start Metro once, then build and launch the app:
+```bash
+npm start -- --reset-cache
+# In another terminal
+npx react-native run-android
 ```
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## Notes
+- The UI shows the connected wallet address and provides a button to sign and send 0.001 SOL to the fixed recipient.
+- After success, a link is provided to open the transaction on Solscan (Devnet).
+- No iOS instructions are included; this project targets Android exclusively.
