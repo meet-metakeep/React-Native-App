@@ -89,7 +89,7 @@ android {
 		// metakeepDomain: Replace <app_id> with your app's id which you can find in the developer console
 		// metakeepScheme: Replace com.domain.app with your app's package name
 		manifestPlaceholders = [
-			metakeepDomain: "12e48311-ebfb-4776-9b57-39e47533757a.auth.metakeep.xyz",
+			metakeepDomain: "<app_id>.auth.metakeep.xyz",
 			metakeepScheme: "com.svmtransactionbroadcasting"
 		]
 		//<---

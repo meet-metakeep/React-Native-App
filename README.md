@@ -17,8 +17,12 @@ npm install
 ## Configure MetaKeep
 - App ID is set in `App.tsx` as:
 ```
-const METAKEEP_APP_ID = '12e48311-ebfb-4776-9b57-39e47533757a';
+const METAKEEP_APP_ID = ''; // 
 ```
+
+
+Update android/app/build.gradle and App.tsx with your solana app id
+
 - Android deep link callback is configured in `android/app/build.gradle` via `manifestPlaceholders` and in `AndroidManifest.xml`.
 
 ## Solana Web3

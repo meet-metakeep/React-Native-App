@@ -9,7 +9,8 @@ import React from 'react';
 import { Buffer } from 'buffer';
 import { Connection, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction, ComputeBudgetProgram } from '@solana/web3.js';
 
-const METAKEEP_APP_ID = '12e48311-ebfb-4776-9b57-39e47533757a';
+// Your Solana app id here
+const METAKEEP_APP_ID = '';
 const SOLANA_RPC_URL = 'https://api.devnet.solana.com';
 
 let sdk: MetaKeep | null = null;
